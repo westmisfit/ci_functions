@@ -92,7 +92,7 @@ function generateVersion
 
   local filename=$(basename $filepath)
   local tempfile="/tmp/$filename"
-  local branch_repl_str=${branch//\//\\/}
+  local branch_safe=${branch//\//\\/}
   local   commit_id=$(git log -n 1 | egrep -m 1 '^commit '  | sed -e 's/^commit[ ]*//' )
   local commit_user=$(git log -n 1 | egrep -m 1 '^Author: ' | sed -e 's/^Author:[ ]*//' )
   local commit_date=$(git log -n 1 --date=iso | egrep -m 1 '^Date: '   | sed -e 's/^Date:[ ]*//' )
@@ -100,7 +100,7 @@ function generateVersion
 
   cat $filepath \
     | sed -e      "s/^build:.*$/build:      $build_number/" \
-    | sed -e     "s/^branch:.*$/branch:     $branch_repl_str/" \
+    | sed -e     "s/^branch:.*$/branch:     $branch_safe/" \
     | sed -e  "s/^committer:.*$/committer:  $commit_user/" \
     | sed -e "s/^build_date:.*$/build_date: $build_date/" \
     > $tempfile
