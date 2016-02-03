@@ -44,6 +44,8 @@ function checkCommitLogTag
   echo 'true'
 }
 
+# check health url
+# usage: checkHealth $url
 function checkHealth
 {
   local url="$1"
@@ -108,4 +110,24 @@ function generateVersion
   if [[ "$debug" != "true" ]]; then
     mv $tempfile $filepath
   fi
+}
+
+# wait for mongod started
+# usage: waitForMongo $container_name
+function waitForMongod
+{
+  local container_name="${1}"
+  echo "wait for mongod started"
+  for i in {1..20}
+  do
+    sleep 3
+    echo "try $i..."
+    docker exec -it $container_name mongo --eval "printjson(db.serverStatus())" > /dev/null
+    if [[ $? -eq 0 ]]; then
+      echo ok
+      break
+    else
+      false
+    fi
+  done
 }
