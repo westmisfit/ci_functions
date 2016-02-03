@@ -49,11 +49,12 @@ function checkCommitLogTag
 function checkHealth
 {
   local url="$1"
+  echo "check health on $url..."
   for i in {1..50}
   do
     sleep 3
     echo "try $i..."
-    curl "$url"
+    curl "$url" &> /dev/null
     if [[ $? -eq 0 ]]; then
       echo ok
       break
@@ -117,7 +118,7 @@ function generateVersion
 function waitForMongod
 {
   local container_name="${1}"
-  echo "wait for mongod started"
+  echo "wait for $container_name container's mongod started..."
   for i in {1..20}
   do
     sleep 3
