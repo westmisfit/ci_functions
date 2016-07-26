@@ -5,46 +5,17 @@
 # modified: 2016-03-04
 ##
 
-function dockerLoginHelp
+function checkCommitLogTag
 {
-  echo "Usage: dockerLogin --email {email} --auth {auth}}" 1>&2
-}
-
-function dockerLogin
-{
-  local email=""
-  local auth=""
-
-  while [[ $# > 0 ]]
-  do
-    key="$1"
-    case $key in
-      --auth) auth="$2"; shift;;
-      --email) email="$2"; shift;;
-      *) dockerLoginHelp; return 1;;
-    esac
-    shift
-  done
-
-  # generate old version docker config file
-  echo '{"https://index.docker.io/v1/":{"auth":"'$auth'","email":"'$email'"}}' > ~/.dockercfg
-
-  # generate new version docker config file
-  mkdir ~/.docker/
-  echo '{"auths":{"https://index.docker.io/v1/":{"auth":"'$auth'","email":"'$email'"}}}' > ~/.docker/config.json
-}
-
-function loadDockerImages
-{
-  local root="${1-.}"
-  local f
-  for f in $( find "$root" -name *.tar )
-  do
-    if [[ -f $f ]]; then
-      echo "load docker image from $f..."
-      docker load --input "$f"
-    fi
-  done
+  local KEYWORD="${1}"
+  if [[ "$KEYWORD" == "" ]]; then
+    echo 'KEYWORD not set. Usage: checkCommitLogTag "{KEYWORD}"' 1>&2
+    return 0
+  fi
+  if ! git log -1 | grep "\[$KEYWORD\]" 1>&2; then
+    return 0
+  fi
+  echo 'true'
 }
 
 function checkCommitUser
@@ -101,6 +72,35 @@ function checkHealth
   return 1
 }
 
+function dockerLoginHelp
+{
+  echo "Usage: dockerLogin --email {email} --auth {auth}}" 1>&2
+}
+
+function dockerLogin
+{
+  local email=""
+  local auth=""
+
+  while [[ $# > 0 ]]
+  do
+    key="$1"
+    case $key in
+      --auth) auth="$2"; shift;;
+      --email) email="$2"; shift;;
+      *) dockerLoginHelp; return 1;;
+    esac
+    shift
+  done
+
+  # generate old version docker config file
+  echo '{"https://index.docker.io/v1/":{"auth":"'$auth'","email":"'$email'"}}' > ~/.dockercfg
+
+  # generate new version docker config file
+  mkdir ~/.docker/
+  echo '{"auths":{"https://index.docker.io/v1/":{"auth":"'$auth'","email":"'$email'"}}}' > ~/.docker/config.json
+}
+
 function generateVersionHelp
 {
   echo "Usage: generateVersion -f config/version.yml -b $TRAVIS_BRANCH -n $TRAVIS_BUILD_NUMBER [--debug]" 1>&2
@@ -148,6 +148,19 @@ function generateVersion
   if [[ "$debug" != "true" ]]; then
     mv $tempfile $filepath
   fi
+}
+
+function loadDockerImages
+{
+  local root="${1-.}"
+  local f
+  for f in $( find "$root" -name *.tar )
+  do
+    if [[ -f $f ]]; then
+      echo "load docker image from $f..."
+      docker load --input "$f"
+    fi
+  done
 }
 
 # wait for mongod started
