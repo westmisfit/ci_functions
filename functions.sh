@@ -201,11 +201,11 @@ function pushToECR()
     shift
   done
 
-  AWS_ACCESS_KEY_ID=$aws_access_key_id
-  AWS_SECRET_ACCESS_KEY=$aws_secret_access_key
-  AWS_DEFAULT_REGION=$region
-  if aws ecr describe-repositories --repository-names=$repository_name > /dev/null; then
-    eval $(aws ecr get-login)
+  aws --profile=dpl configure set aws_access_key_id $aws_access_key_id
+  aws --profile=dpl configure set aws_secret_access_key $aws_secret_access_key
+  aws --profile=dpl configure set region $region
+  if aws --profile=dpl ecr describe-repositories --repository-names=$repository_name > /dev/null; then
+    eval $(aws --profile=dpl ecr get-login)
     docker push $endpoint/$repository_name:$tag_name
   else
     return 1
