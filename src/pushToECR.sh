@@ -43,5 +43,7 @@ function pushToECR()
   if aws ecr describe-repositories --repository-names=$repository_name > /dev/null; then
     eval $(aws ecr get-login)
     docker push $endpoint/$repository_name:$tag_name
+  else
+    return 1
   fi
 }

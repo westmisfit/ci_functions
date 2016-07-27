@@ -173,6 +173,7 @@ options:
 --repository_name {repository_name}  docker repository name, e.g. misfit/test
 --endpoint {endpoint}  registry endpoint, e.g. 315962882822.dkr.ecr.us-east-1.amazonaws.com
 --tag_name {tag_name}  tag name of docker image
+--region {region}  aws region, e.g. us-east-1
 '
 }
 
@@ -181,8 +182,9 @@ function pushToECR()
   local aws_access_key_id
   local aws_secret_access_key
   local repository_name
-  local endpoint
-  local tag_name
+  local endpoint='315962882822.dkr.ecr.us-east-1.amazonaws.com'
+  local tag_name='latest'
+  local region='us-east-1'
 
   while [[ $# > 0 ]]
   do
@@ -193,6 +195,7 @@ function pushToECR()
       --repository_name) repository_name="$2"; shift;;
       --endpoint) endpoint="$2"; shift;;
       --tag_name) tag_name="$2"; shift;;
+      --region) region="$2"; shift;;
       *) pushToECRHelp; return 1;;
     esac
     shift
@@ -200,9 +203,12 @@ function pushToECR()
 
   AWS_ACCESS_KEY_ID=$aws_access_key_id
   AWS_SECRET_ACCESS_KEY=$aws_secret_access_key
+  AWS_DEFAULT_REGION=$region
   if aws ecr describe-repositories --repository-names=$repository_name > /dev/null; then
     eval $(aws ecr get-login)
     docker push $endpoint/$repository_name:$tag_name
+  else
+    return 1
   fi
 }
 
